@@ -5,8 +5,8 @@ public class Shape
 {
 	private BufferedImage block;
 	private int[][]coords;
-	private int[] dis;
 	Board board;
+	private int colMul;
 	private int x, y;
 	private int deltaX;
 	
@@ -14,14 +14,16 @@ public class Shape
 	private static int normalSpeed=500, fastSpeed=50;
 	private boolean goFast;
 	
-	public Shape(BufferedImage b, int[][] c, int[] d, Board bo) // 0=left, 1=right, 2=up, 3=down
+	public Shape( int cm, BufferedImage b, int[][] c, Board bo) // 0=left, 1=right, 2=up, 3=down
 	{
+		colMul=cm;
 		block=b;
 		coords=c;
-		dis=d;
 		board=bo;
-		x=3;
+		
+		x=5;
 		y=1;
+		
 		deltaX=0;
 		time=0;
 		lastTime=System.currentTimeMillis();
@@ -32,53 +34,55 @@ public class Shape
 		// Y direction
 		time+=System.currentTimeMillis()-lastTime;
 		lastTime=System.currentTimeMillis();
+		
 		if (goFast==false)
-			if(time>normalSpeed) 
-				if (y+dis[3]<board.getBoardHeight()) {
-					y++;
-					time=0;
+			if(time>normalSpeed) { 
+				y++;
+				if (collisionY()) {
+					board.nextShape();
+					goFast=false;
+					board.checkLine();
 				}
-		if (goFast==true)	
-			if (time>fastSpeed) 
-				if (y+dis[3]<board.getBoardHeight()) {
-					y++;
-					time=0;
+				time=0;
+			} else {}
+		else 
+			if (time>fastSpeed)  { 
+				y++;
+				if (collisionY()) {
+					board.nextShape();
+					goFast=false;
+					board.checkLine();
 				}
+				time=0;
+			}
 		
 		// X direction
-		if (x-dis[0]+deltaX>=0 && x+dis[1]+deltaX<=board.getBoardWidth())
-			x+=deltaX;
+		x+=deltaX;
+		if (collisionX())
+			x-=deltaX;
 		deltaX=0;
 		
 	}
-
-	public void rotateLeft() {
-		if (coords.length!=2&&coords[0].length!=2) {
-			int[]d= new int[] {dis[2], dis[3], dis[1], dis[0]};
-			dis=d;
-			int r=coords.length;
-			int c=coords[0].length;
-			int ar[][] = new int[c][r];
-			for (int i=0; i<r; i++)
-				for (int j=0; j<c; j++)
-					ar[c-1-j][i]=coords[i][j];
-			if (x+coords.length<=board.getBoardWidth()) //right side only
-				coords=ar;
-		}
-	}
 	
-	public void rotateRight() {
+ 	public void rotate (boolean right) {
 		if (coords.length!=2&&coords[0].length!=2) {
-			int[]d= new int[] {dis[3], dis[2], dis[0], dis[1]};
-			dis=d;
 			int r=coords.length;
 			int c=coords[0].length;
 			int ar[][] = new int[c][r];
 			for (int i=0; i<r; i++)
 				for (int j=0; j<c; j++)
-					ar[j][r-1-i]=coords[i][j];
-			if (x+coords.length<=board.getBoardWidth()) // right side only
-				coords=ar;
+					if (right)
+						ar[j][r-1-i]=coords[i][j];
+					else
+						ar[c-1-j][i]=coords[i][j];
+			boolean turn=true;
+			for (int i=0; i<ar.length; i++)
+				for (int j=0; j<ar[0].length; j++)
+					if (ar[i][j]!=0)
+						if (board.getBoard()[y+i][x+j]!=0)
+							turn=false;
+			if (turn)
+			coords=ar;
 		}
 	}
 	
@@ -98,4 +102,54 @@ public class Shape
 		goFast=b;
 	}
 	
+	public boolean collisionX() {
+		for (int i=0; i<coords.length; i++)
+			for (int j=0; j<coords[i].length; j++)
+				if (coords[i][j]==1) {
+					if (board.getBoard()[y+i][x+j]!=0)
+						return true;
+					j=coords[i].length;	
+				}
+		for (int i=0; i<coords.length; i++)
+			for (int j=coords[i].length-1; j>=0; j--)
+				if (coords[i][j]==1) {
+					if (board.getBoard()[y+i][x+j]!=0)
+						return true;
+					j=-1;	
+				}
+		return false;
+	} 
+	
+	public boolean collisionY() {
+		for (int j=0; j<coords[0].length; j++)
+			for (int i=coords.length-1; i>=0; i--)
+				if (coords[i][j]==1) {
+					if (board.getBoard()[y+i][x+j]!=0)
+						return true;
+					i=-1;	
+				}
+		return false;
+	} 
+	
+	public int[][] getCoords() {
+		return coords;
+	}
+	public int getX() {
+		return x;
+	}
+	public int getY() {
+		return y;
+	}
+	public void setX(int x) {
+		this.x=x;
+	}
+	public void setY(int y) {
+		this.y=y;
+	}
+	public BufferedImage getBlock() {
+		return block;
+	}
+	public int getColMul() {
+		return colMul;
+	}
 }
