@@ -4,6 +4,12 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
@@ -31,9 +37,13 @@ public class Board extends JPanel implements KeyListener
 	private final int FPS=60;
 	private final int delay= 1000/FPS;
 	
+	private int score=0, highScore;
+	
 	public Board()
 	{
 		setBoard();
+		
+		highScore=getHighScore();
 		
 		try
 		{
@@ -95,8 +105,11 @@ public class Board extends JPanel implements KeyListener
 			{1, 1}		// square-shape
 		}, this);
 		
-		currentShape= shapes[(int)(Math.random()*7)];
-		newShape= shapes[(int)(Math.random()*7)];
+		int shapeNum = (int)(Math.random()*7); 
+		currentShape= new Shape (shapes[shapeNum].getColMul(), shapes[shapeNum].getBlock(), shapes[shapeNum].getCoords(), this);
+		shapeNum = (int)(Math.random()*7); 
+		newShape= new Shape (shapes[shapeNum].getColMul(), shapes[shapeNum].getBlock(), shapes[shapeNum].getCoords(), this);
+		
 	}
 	
 	public void update()
@@ -109,7 +122,7 @@ public class Board extends JPanel implements KeyListener
 		}
 	}
 	
-	public void checkLine() {
+	public void checkLine()  {
 		int height= board.length-2;
 		
 		for (int i=height; i>0; i--) {
@@ -121,8 +134,79 @@ public class Board extends JPanel implements KeyListener
 			}
 			if (count<board[i].length-2)
 				height--;
+			else {
+				score++;
+				Tetris.getScoreLabel().setText("Score: "+ String.valueOf(score));
+				checkScore();
+			}
 		}
 	}
+	
+	public void checkScore() {
+		if (score>highScore) {
+			highScore=score;
+			Tetris.getHighScoreLabel().setText("High Score: "+ String.valueOf(highScore));
+			
+			// create file with the high score
+			File file = new File ("HighScore.dat");
+			if (!file.exists())
+				try {
+					file.createNewFile();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			// update the high score file
+			FileWriter writeFile=null;
+			BufferedWriter out=null;
+			try {
+				writeFile=new FileWriter(file);
+				out = new BufferedWriter(writeFile);
+				out.write(String.valueOf(highScore));
+				System.out.println("highscore written"); 
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			finally {
+				try {
+					if (out!=null) {
+						out.close();
+						System.out.println("Writer closed");
+					}
+				}
+				catch (IOException e) {
+						e.printStackTrace();
+				}
+			}
+			System.out.printf("File is located at %s%n", file.getAbsolutePath());
+		}
+	}
+	public int getHighScore() {
+		
+		File file = new File ("HighScore.dat");
+		
+		FileReader readFile=null;
+		BufferedReader in=null;
+		try {
+			readFile= new FileReader(file);
+			in= new BufferedReader(readFile);
+			return Integer.parseInt(in.readLine());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		finally {
+			try {
+				if (in!=null) {
+					in.close();
+					System.out.println("Reader closed");
+				}
+			}
+			catch (IOException e) {
+					e.printStackTrace();
+			}
+		}
+		return 0;
+	}
+	
 	
 	public void nextShape() {
 		
@@ -131,7 +215,7 @@ public class Board extends JPanel implements KeyListener
 				for (int j=0; j<currentShape.getCoords()[i].length; j++)
 					if (currentShape.getCoords()[i][j]==1)
 						board[currentShape.getY()-1+i][currentShape.getX()+j]=currentShape.getColMul();
-		
+			
 			// print the board
 			System.out.println("\n");
 			for (int i=0; i<board.length; i++) {
@@ -145,8 +229,12 @@ public class Board extends JPanel implements KeyListener
 		currentShape.setY(1);
 		
 		currentShape=newShape;
-		newShape= shapes[(int)(Math.random()*7)];
+		int shapeNum = (int)(Math.random()*7); 
+		newShape= new Shape (shapes[shapeNum].getColMul(), shapes[shapeNum].getBlock(), shapes[shapeNum].getCoords(), this);
 		
+// Display new Shape!!!		
+		
+		// check if spawning available == if game over
 		for (int i=0; i<currentShape.getCoords().length; i++)
 			for (int j=0; j<currentShape.getCoords()[i].length; j++)
 				if (currentShape.getCoords()[i][j]==1)
@@ -179,11 +267,11 @@ public class Board extends JPanel implements KeyListener
 	public void pause() {
 		if (timer.isRunning()) {
 			timer.stop();
-			Tetris.getPaused().setText("Paused");
+			Tetris.getPausedLabel().setText("Paused");
 		}
 		else {
 			timer.start();
-			Tetris.getPaused().setText(" ");
+			Tetris.getPausedLabel().setText(" ");
 		}
 	}
 	
@@ -200,7 +288,13 @@ public class Board extends JPanel implements KeyListener
 	public int[][] getBoard() {
 		return board;
 	}
-
+	public void setGameOver(boolean go) {
+		gameOver=go;
+	}
+	public void setScore(int s) {
+		score=s;
+	}
+	
 	public void keyPressed(KeyEvent e) {
 		if (e.getKeyCode()== KeyEvent.VK_LEFT)
 			currentShape.setDeltaX(-1);
@@ -236,6 +330,5 @@ public class Board extends JPanel implements KeyListener
 			for (int j=0; j<board[0].length; j++)
 				if (i==0 || i==board.length-1 || j==0 || j==board[i].length-1)
 					board[i][j]=1;
-		Tetris.getPaused().setText(" ");
 	}
 }
