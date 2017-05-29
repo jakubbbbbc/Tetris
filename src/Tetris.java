@@ -79,7 +79,7 @@ public class Tetris extends JFrame implements ActionListener
 			scoreLabel.setText("Score: 0");
 			pausedLabel.setText(" ");
 			gameOverLabel.setText(" ");
-			board.startTimer();
+			board.restartTimer();
 			//board.setFocusable(true);
 			board.requestFocusInWindow();
 			board.setGameOver(false);
