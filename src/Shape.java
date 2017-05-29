@@ -14,7 +14,7 @@ public class Shape
 	private static int normalSpeed=500, fastSpeed=50;
 	private boolean goFast;
 	
-	public Shape( int cm, BufferedImage b, int[][] c, Board bo) // 0=left, 1=right, 2=up, 3=down
+	public Shape(int cm, BufferedImage b, int[][] c, Board bo)
 	{
 		colMul=cm;
 		block=b;
@@ -35,26 +35,22 @@ public class Shape
 		time+=System.currentTimeMillis()-lastTime;
 		lastTime=System.currentTimeMillis();
 		
-		if (goFast==false)
-			if(time>normalSpeed) { 
-				y++;
-				if (collisionY()) {
-					board.nextShape();
-					goFast=false;
-					board.checkLine();
-				}
-				time=0;
-			} else {}
-		else 
-			if (time>fastSpeed)  { 
-				y++;
-				if (collisionY()) {
-					board.nextShape();
-					goFast=false;
-					board.checkLine();
-				}
-				time=0;
+		int currentSpeed;
+		
+		if (!goFast)
+			currentSpeed= normalSpeed;
+		else
+			currentSpeed= fastSpeed;
+		
+		if(time>currentSpeed) { 
+			y++;
+			if (collisionY()) {
+				board.nextShape();
+				goFast=false;
+				board.checkLine();
 			}
+			time=0;
+		}
 		
 		// X direction
 		x+=deltaX;
@@ -94,14 +90,6 @@ public class Shape
 					g.drawImage(block, (x+j-1)*board.getBlockSize(), (y+i-1)*board.getBlockSize(), null);
 	}
 	
-	public void setDeltaX(int i){
-		deltaX=i;
-	}
-	
-	public void setSpeed(boolean b) {
-		goFast=b;
-	}
-	
 	public boolean collisionX() {
 		for (int i=0; i<coords.length; i++)
 			for (int j=0; j<coords[i].length; j++)
@@ -131,20 +119,29 @@ public class Shape
 		return false;
 	} 
 	
-	public int[][] getCoords() {
-		return coords;
+	
+	public void setDeltaX(int i){
+		deltaX=i;
 	}
-	public int getX() {
-		return x;
-	}
-	public int getY() {
-		return y;
+	
+	public void setSpeed(boolean b) {
+		goFast=b;
 	}
 	public void setX(int x) {
 		this.x=x;
 	}
 	public void setY(int y) {
 		this.y=y;
+	}
+	
+	public int getX() {
+		return x;
+	}
+	public int getY() {
+		return y;
+	}
+	public int[][] getCoords() {
+		return coords;
 	}
 	public BufferedImage getBlock() {
 		return block;
