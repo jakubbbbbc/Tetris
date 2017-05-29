@@ -215,7 +215,7 @@ public class Board extends JPanel implements KeyListener
 			for (int i=0; i<currentShape.getCoords().length; i++)
 				for (int j=0; j<currentShape.getCoords()[i].length; j++)
 					if (currentShape.getCoords()[i][j]==1)
-						board[currentShape.getY()-1+i][currentShape.getX()+j]=currentShape.getColMul();
+						board[currentShape.getY()+i][currentShape.getX()+j]=currentShape.getColMul();
 			
 			// print the board
 			System.out.println("\n");
@@ -232,12 +232,6 @@ public class Board extends JPanel implements KeyListener
 		
 // Display new Shape!!!		
 		
-		// check if spawning available == if game over
-		for (int i=0; i<currentShape.getCoords().length; i++)
-			for (int j=0; j<currentShape.getCoords()[i].length; j++)
-				if (currentShape.getCoords()[i][j]==1)
-					if (board[currentShape.getY()+i][currentShape.getX()+j]!=0)
-						gameOver=true;
 	}
 	
 	public void paintComponent(Graphics g)
@@ -247,30 +241,24 @@ public class Board extends JPanel implements KeyListener
 		currentShape.render(g);
 		g.setColor(Color.black); // not needed; black automatically
 		
-		for (int i=0; i<=boardWidth; i++)
-		{
-			if (i==0)
-				g.fillRect(0, 0+borderWidth, borderWidth, blockSize*boardHeight);
-			else if (i==boardWidth)
-				g.fillRect(blockSize*i+borderWidth, 0+borderWidth, borderWidth, blockSize*boardHeight);
-			else // without it the left border is wider
+		// draw the grid
+		for (int i=1; i<boardWidth; i++)
 			g.drawLine(blockSize*i+borderWidth, 0+borderWidth, blockSize*i+borderWidth, blockSize*boardHeight+borderWidth);
-		}
-		for (int i=0; i<=boardHeight; i++)
-		{
-			if (i==0)
-				g.fillRect(0, 0, blockSize*boardWidth+2*borderWidth, borderWidth);
-			else if (i==boardHeight)
-				g.fillRect(0, blockSize*i+borderWidth, blockSize*boardWidth+2*borderWidth, borderWidth);
-			else // without it the upper border is wider
+		for (int i=1; i<boardHeight; i++)
 			g.drawLine(0+borderWidth, blockSize*i+borderWidth, blockSize*boardWidth+borderWidth, blockSize*i+borderWidth);
-		}
 	
+		// draw blocks on the bottom
 		for (int i=0; i<board.length; i++) 
 			for (int j=0; j<board[i].length; j++) 
 				if (board[i][j]!=0 && board[i][j]!=8)
-					g.drawImage(blocks.getSubimage(blockSize*(board[i][j]-1), 0, blockSize, blockSize), (j-1)*blockSize+borderWidth, (i-1)*blockSize+borderWidth, null);
+					g.drawImage(blocks.getSubimage(blockSize*(board[i][j]-1), 0, blockSize, blockSize), (j-1)*blockSize+borderWidth, (i-2)*blockSize+borderWidth, null);
 		
+		// draw the frame
+		g.fillRect(0, 0+borderWidth, borderWidth, blockSize*boardHeight);
+		g.fillRect(blockSize*boardWidth+borderWidth, 0+borderWidth, borderWidth, blockSize*boardHeight);
+		g.fillRect(0, 0, blockSize*boardWidth+2*borderWidth, borderWidth);
+		g.fillRect(0, blockSize*boardHeight+borderWidth, blockSize*boardWidth+2*borderWidth, borderWidth);
+	
 	}
 	
 	public void pause() {
@@ -334,15 +322,15 @@ public class Board extends JPanel implements KeyListener
 		
 	}
 	
-	public void startTimer() {
-		timer.start();
+	public void restartTimer() {
+		timer.restart();
 	}
 
 	public void setBoard() {
-		board= new int[boardHeight+2][boardWidth+2];
+		board= new int[boardHeight+3][boardWidth+2];
 		for (int i=0; i<board.length; i++)
 			for (int j=0; j<board[0].length; j++)
-				if (i==0 || i==board.length-1 || j==0 || j==board[i].length-1)
+				if (i==board.length-1 || j==0 || j==board[i].length-1)
 					board[i][j]=8;
 	}
 }
