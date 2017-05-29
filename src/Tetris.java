@@ -12,12 +12,15 @@ import java.awt.event.ActionEvent;
 
 
 public class Tetris extends JFrame implements ActionListener
-{
-	private static final int WIDTH= 700, HEIGHT= 621;
+{	
+	private static final int borderWidth=3;
+	private static final int WIDTH= 700, HEIGHT= 622+2*borderWidth; //700, 622
 	
 	private static Board board;
-	private static JLabel scoreLabel, highScoreLabel, pausedLabel, next;
+	private static JLabel scoreLabel, highScoreLabel, gameOverLabel, pausedLabel, next;
 	private JButton newGame;
+	
+	public int newGameCount=0;
 	
 	public Tetris()
 	{
@@ -31,6 +34,7 @@ public class Tetris extends JFrame implements ActionListener
 		board= new Board();
 		scoreLabel = new JLabel ("Score: 0");
 		highScoreLabel= new JLabel ("High Score: "+board.getHighScore());
+		gameOverLabel= new JLabel (" ");
 		pausedLabel= new JLabel (" ", JLabel.CENTER);
 		next= new JLabel("Next Shape", JLabel.CENTER);
 		newGame= new JButton ("New Game");
@@ -39,10 +43,11 @@ public class Tetris extends JFrame implements ActionListener
 		// set the panel
 		JPanel right= new JPanel();
 		//right.setSize(200, 621);
-		right.setLayout(new GridLayout(5,1));
+		right.setLayout(new GridLayout(6,1));
 		right.add(next);
 		right.add(pausedLabel);
 		right.add(newGame);
+		right.add(gameOverLabel);
 		right.add(highScoreLabel);
 		right.add(scoreLabel);
 		
@@ -66,10 +71,14 @@ public class Tetris extends JFrame implements ActionListener
 		
 		if (action.equals("New Game")) {
 			board.setBoard();
-			board.nextShape();
+			if (newGameCount!=0)
+				board.nextShape();
+			else 
+				newGameCount++;
 			board.setScore(0);
 			scoreLabel.setText("Score: 0");
 			pausedLabel.setText(" ");
+			gameOverLabel.setText(" ");
 			board.startTimer();
 			//board.setFocusable(true);
 			board.requestFocusInWindow();
@@ -79,6 +88,9 @@ public class Tetris extends JFrame implements ActionListener
 		
 	}
 	
+	public static int getBorderWidth() {
+		return borderWidth;
+	}
 	public static JLabel getPausedLabel() {
 		return pausedLabel;
 	}
@@ -87,6 +99,9 @@ public class Tetris extends JFrame implements ActionListener
 	}
 	public static JLabel getHighScoreLabel() {
 		return highScoreLabel;
+	}
+	public static JLabel getGameOverLabel() {
+		return gameOverLabel;
 	}
 	
 	public static void main(String[]args)
