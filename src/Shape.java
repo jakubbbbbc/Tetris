@@ -22,7 +22,7 @@ public class Shape
 		board=bo;
 		
 		x=4;
-		y=1;
+		y=-1;
 		
 		deltaX=0;
 		time=0;
@@ -53,8 +53,11 @@ public class Shape
 		if(time>currentSpeed) { 
 			y++;
 			if (collisionY()) {
-				board.nextShape();
 				goFast=false;
+//check if game over
+				if (y==0)
+					board.setGameOver(true);
+				board.nextShape();
 				board.checkLine();
 			}
 			time=0;
@@ -67,13 +70,36 @@ public class Shape
 		deltaX=0;
 	}
 	
-	public void hardDrop() {
-		while (!collisionY())
-			y++;
-		y--;
-	}
+	public boolean collisionX() {
+		for (int i=0; i<coords.length; i++)
+			for (int j=0; j<coords[i].length; j++)
+				if (coords[i][j]==1) {
+					if (board.getBoard()[y+i+1][x+j]!=0)
+						return true;
+					j=coords[i].length;	
+				}
+		for (int i=0; i<coords.length; i++)
+			for (int j=coords[i].length-1; j>=0; j--)
+				if (coords[i][j]==1) {
+					if (board.getBoard()[y+i+1][x+j]!=0)
+						return true;
+					j=-1;	
+				}
+		return false;
+	} 
 	
- 	public void rotate (boolean right) {
+	public boolean collisionY() {
+		for (int j=0; j<coords[0].length; j++)
+			for (int i=coords.length-1; i>=0; i--)
+				if (coords[i][j]==1) {
+					if (board.getBoard()[y+i+1][x+j]!=0)
+						return true;
+					i=-1;	
+				}
+		return false;
+	} 
+	
+	public void rotate (boolean right) {
 		if (coords.length!=2&&coords[0].length!=2) {
 			int r=coords.length;
 			int c=coords[0].length;
@@ -88,42 +114,18 @@ public class Shape
 			for (int i=0; i<ar.length; i++)
 				for (int j=0; j<ar[0].length; j++)
 					if (ar[i][j]!=0)
-						if (board.getBoard()[y+i][x+j]!=0)
+						if (board.getBoard()[y+i+1][x+j]!=0)
 							turn=false;
 			if (turn)
 			coords=ar;
 		}
 	}
 	
-	public boolean collisionX() {
-		for (int i=0; i<coords.length; i++)
-			for (int j=0; j<coords[i].length; j++)
-				if (coords[i][j]==1) {
-					if (board.getBoard()[y+i][x+j]!=0)
-						return true;
-					j=coords[i].length;	
-				}
-		for (int i=0; i<coords.length; i++)
-			for (int j=coords[i].length-1; j>=0; j--)
-				if (coords[i][j]==1) {
-					if (board.getBoard()[y+i][x+j]!=0)
-						return true;
-					j=-1;	
-				}
-		return false;
-	} 
-	
-	public boolean collisionY() {
-		for (int j=0; j<coords[0].length; j++)
-			for (int i=coords.length-1; i>=0; i--)
-				if (coords[i][j]==1) {
-					if (board.getBoard()[y+i][x+j]!=0)
-						return true;
-					i=-1;	
-				}
-		return false;
-	} 
-	
+	public void hardDrop() {
+		while (!collisionY())
+			y++;
+		y--;
+	}
 	
 	public void setDeltaX(int i){
 		deltaX=i;
