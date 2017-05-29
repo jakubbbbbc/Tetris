@@ -1,4 +1,5 @@
 import java.awt.Graphics;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -23,11 +24,11 @@ public class Board extends JPanel implements KeyListener
 	
 	private final int blockSize= 30;
 	
-	private final int boardWidth= 10, boardHeight= 20;
+	private final int boardWidth= 10, boardHeight= 20, borderWidth=Tetris.getBorderWidth();
 	
 	private int[][] board;
 	
-	public boolean gameOver=false;
+	public boolean gameOver=true;
 	
 	private Shape shapes[]=new Shape[7];
 	private Shape currentShape;
@@ -64,7 +65,7 @@ public class Board extends JPanel implements KeyListener
 			}
 		});
 		
-		timer.start();
+		//timer.start();
 		
 		
 		//shapes
@@ -117,7 +118,7 @@ public class Board extends JPanel implements KeyListener
 		if(!gameOver)
 			currentShape.update();
 		else {
-			System.out.println("\nGame Over!!! You Loser!!!");
+			Tetris.getGameOverLabel().setText("Game over. Press \"New Game\" to start a new game.");
 			timer.stop();
 		}
 	}
@@ -224,9 +225,6 @@ public class Board extends JPanel implements KeyListener
 				System.out.println("\n");
 			}
 		}
-
-		currentShape.setX(5);
-		currentShape.setY(1);
 		
 		currentShape=newShape;
 		int shapeNum = (int)(Math.random()*7); 
@@ -247,20 +245,31 @@ public class Board extends JPanel implements KeyListener
 		super.paintComponent(g);
 		
 		currentShape.render(g);
+		g.setColor(Color.black); // not needed; black automatically
 		
-		for (int i=0; i<boardWidth; i++)
+		for (int i=0; i<=boardWidth; i++)
 		{
-			g.drawLine(blockSize*i, 0, blockSize*i, blockSize*boardHeight);
+			if (i==0)
+				g.fillRect(0, 0+borderWidth, borderWidth, blockSize*boardHeight);
+			else if (i==boardWidth)
+				g.fillRect(blockSize*i+borderWidth, 0+borderWidth, borderWidth, blockSize*boardHeight);
+			else // without it the left border is wider
+			g.drawLine(blockSize*i+borderWidth, 0+borderWidth, blockSize*i+borderWidth, blockSize*boardHeight+borderWidth);
 		}
-		for (int i=0; i<boardHeight; i++)
+		for (int i=0; i<=boardHeight; i++)
 		{
-			g.drawLine(0, blockSize*i, blockSize*boardWidth, blockSize*i);
+			if (i==0)
+				g.fillRect(0, 0, blockSize*boardWidth+2*borderWidth, borderWidth);
+			else if (i==boardHeight)
+				g.fillRect(0, blockSize*i+borderWidth, blockSize*boardWidth+2*borderWidth, borderWidth);
+			else // without it the upper border is wider
+			g.drawLine(0+borderWidth, blockSize*i+borderWidth, blockSize*boardWidth+borderWidth, blockSize*i+borderWidth);
 		}
-		
+	
 		for (int i=0; i<board.length; i++) 
 			for (int j=0; j<board[i].length; j++) 
-				if (board[i][j]!=0)
-					g.drawImage(blocks.getSubimage(blockSize*(board[i][j]-1), 0, blockSize, blockSize), (j-1)*blockSize, (i-1)*blockSize, null);
+				if (board[i][j]!=0 && board[i][j]!=8)
+					g.drawImage(blocks.getSubimage(blockSize*(board[i][j]-1), 0, blockSize, blockSize), (j-1)*blockSize+borderWidth, (i-1)*blockSize+borderWidth, null);
 		
 	}
 	
@@ -285,6 +294,9 @@ public class Board extends JPanel implements KeyListener
 	public int getBoardHeight() {
 		return boardHeight;
 	}
+	public int getBorderWidth() {
+		return borderWidth;
+	}
 	public int[][] getBoard() {
 		return board;
 	}
@@ -302,6 +314,8 @@ public class Board extends JPanel implements KeyListener
 			currentShape.setDeltaX(1);
 		if (e.getKeyCode()== KeyEvent.VK_DOWN)
 			currentShape.setSpeed(true);
+		if (e.getKeyCode()== KeyEvent.VK_SPACE)
+			currentShape.hardDrop();
 		if (e.getKeyCode()== KeyEvent.VK_P)
 			pause();
 	}
@@ -329,6 +343,6 @@ public class Board extends JPanel implements KeyListener
 		for (int i=0; i<board.length; i++)
 			for (int j=0; j<board[0].length; j++)
 				if (i==0 || i==board.length-1 || j==0 || j==board[i].length-1)
-					board[i][j]=1;
+					board[i][j]=8;
 	}
 }
