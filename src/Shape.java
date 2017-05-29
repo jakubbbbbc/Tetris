@@ -21,13 +21,21 @@ public class Shape
 		coords=c;
 		board=bo;
 		
-		x=5;
+		x=4;
 		y=1;
 		
 		deltaX=0;
 		time=0;
 		lastTime=System.currentTimeMillis();
 		goFast=false;
+	}
+	
+	public void render(Graphics g)
+	{
+		for (int i=0; i<coords.length; i++)
+			for (int j=0; j<coords[i].length; j++)
+				if (coords[i][j]==1)
+					g.drawImage(block, (x+j-1)*board.getBlockSize()+board.getBorderWidth(), (y+i-1)*board.getBlockSize()+board.getBorderWidth(), null);
 	}
 	
 	public void update() {
@@ -57,7 +65,12 @@ public class Shape
 		if (collisionX())
 			x-=deltaX;
 		deltaX=0;
-		
+	}
+	
+	public void hardDrop() {
+		while (!collisionY())
+			y++;
+		y--;
 	}
 	
  	public void rotate (boolean right) {
@@ -80,14 +93,6 @@ public class Shape
 			if (turn)
 			coords=ar;
 		}
-	}
-	
-	public void render(Graphics g)
-	{
-		for (int i=0; i<coords.length; i++)
-			for (int j=0; j<coords[i].length; j++)
-				if (coords[i][j]==1)
-					g.drawImage(block, (x+j-1)*board.getBlockSize(), (y+i-1)*board.getBlockSize(), null);
 	}
 	
 	public boolean collisionX() {
@@ -126,12 +131,6 @@ public class Shape
 	
 	public void setSpeed(boolean b) {
 		goFast=b;
-	}
-	public void setX(int x) {
-		this.x=x;
-	}
-	public void setY(int y) {
-		this.y=y;
 	}
 	
 	public int getX() {
