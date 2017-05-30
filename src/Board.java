@@ -38,14 +38,12 @@ public class Board extends JPanel implements KeyListener
 	private final int FPS=60;
 	private final int delay= 1000/FPS;
 	
-	private int score=0, highScore;
+	private int linesMade=0, score=0, highScore;
 	
 	public Board()
 	{
 		setBoard();
-		
-		highScore=getHighScore();
-		
+				
 		try
 		{
 			blocks= ImageIO.read(Board.class.getResource("/blocks.png"));
@@ -56,10 +54,7 @@ public class Board extends JPanel implements KeyListener
 		}
 		
 		timer = new Timer(delay, new ActionListener(){
-
-			@Override
-			public void actionPerformed(ActionEvent arg0) 
-			{
+			public void actionPerformed(ActionEvent arg0) {
 				update();
 				repaint();	
 			}
@@ -67,50 +62,15 @@ public class Board extends JPanel implements KeyListener
 		
 		//timer.start();
 		
-		
-		//shapes
-		
-		shapes[0]= new Shape (1, blocks.getSubimage(0, 0, blockSize, blockSize), new int[][] {
-			{0, 0, 0, 0},
-			{1, 1, 1, 1},
-			{0, 0, 0, 0},
-			{0, 0, 0, 0}	// I-shape
-		}, this);
-		shapes[1]= new Shape (2, blocks.getSubimage(blockSize, 0, blockSize, blockSize), new int[][] {
-			{1, 1, 0},
-			{0, 1, 1},
-			{0, 0, 0}	// Z-shape
-		}, this);
-		shapes[2]= new Shape (3, blocks.getSubimage(blockSize*2, 0, blockSize, blockSize), new int[][] {
-			{0, 1, 1},
-			{1, 1, 0},
-			{0, 0, 0}	// S-shape
-		}, this);
-		shapes[3]= new Shape (4, blocks.getSubimage(blockSize*3, 0, blockSize, blockSize), new int[][] {
-			{0, 1, 0},
-			{1, 1, 1},
-			{0, 0, 0}	// T-shape
-		}, this);
-		shapes[4]= new Shape (5, blocks.getSubimage(blockSize*4, 0, blockSize, blockSize), new int[][] {
-			{0, 0, 1},
-			{1, 1, 1},
-			{0, 0, 0}	// L-shape
-		}, this);
-		shapes[5]= new Shape (6, blocks.getSubimage(blockSize*5, 0, blockSize, blockSize), new int[][] {
-			{1, 0, 0},
-			{1, 1, 1},
-			{0, 0, 0}	// J-shape
-		}, this);
-		shapes[6]= new Shape (7, blocks.getSubimage(blockSize*6, 0, blockSize, blockSize), new int[][] {
-			{1, 1},
-			{1, 1}		// square-shape
-		}, this);
+		setShapes();
 		
 		int shapeNum = (int)(Math.random()*7); 
 		currentShape= new Shape (shapes[shapeNum].getColMul(), shapes[shapeNum].getBlock(), shapes[shapeNum].getCoords(), this);
 		shapeNum = (int)(Math.random()*7); 
 		newShape= new Shape (shapes[shapeNum].getColMul(), shapes[shapeNum].getBlock(), shapes[shapeNum].getCoords(), this);
 		
+		
+		highScore=getHighScore();
 	}
 	
 	public void update()
@@ -125,6 +85,7 @@ public class Board extends JPanel implements KeyListener
 	
 	public void checkLine()  {
 		int height= board.length-2;
+		int c=0;
 		
 		for (int i=height; i>0; i--) {
 			int count=0;
@@ -136,11 +97,16 @@ public class Board extends JPanel implements KeyListener
 			if (count<board[i].length-2)
 				height--;
 			else {
-				score++;
-				Tetris.getScoreLabel().setText("Score: "+ String.valueOf(score));
-				checkScore();
+				linesMade++;
+				Tetris.getLinesMadeLabel().setText("Lines made: "+ linesMade);
+				c++;
+				Shape.setLevel(linesMade/10+1);
+				Tetris.getLevelLabel().setText("Level "+ Shape.getLevel());
 			}
 		}
+		score+=c*c;
+		Tetris.getScoreLabel().setText("Score: "+ String.valueOf(score));
+		checkScore();
 	}
 	
 	public void checkScore() {
@@ -211,11 +177,11 @@ public class Board extends JPanel implements KeyListener
 	
 	public void nextShape() {
 		
-		if (currentShape.collisionY()) {
+		if (currentShape.collisionY()) { // without checking if collisionY it would treat all objects as if they hit the bottom
 			for (int i=0; i<currentShape.getCoords().length; i++)
 				for (int j=0; j<currentShape.getCoords()[i].length; j++)
 					if (currentShape.getCoords()[i][j]==1)
-						board[currentShape.getY()+i][currentShape.getX()+j]=currentShape.getColMul();
+						board[currentShape.getY()+i+currentShape.getDisRow()][currentShape.getX()+j]=currentShape.getColMul();
 			
 			// print the board
 			System.out.println("\n");
@@ -251,7 +217,7 @@ public class Board extends JPanel implements KeyListener
 		for (int i=0; i<board.length; i++) 
 			for (int j=0; j<board[i].length; j++) 
 				if (board[i][j]!=0 && board[i][j]!=8)
-					g.drawImage(blocks.getSubimage(blockSize*(board[i][j]-1), 0, blockSize, blockSize), (j-1)*blockSize+borderWidth, (i-2)*blockSize+borderWidth, null);
+					g.drawImage(blocks.getSubimage(blockSize*(board[i][j]-1), 0, blockSize, blockSize), (j-1)*blockSize+borderWidth, (i-2-Shape.getDisRow())*blockSize+borderWidth, null);
 		
 		// draw the frame
 		g.fillRect(0, 0+borderWidth, borderWidth, blockSize*boardHeight);
@@ -294,6 +260,9 @@ public class Board extends JPanel implements KeyListener
 	public void setScore(int s) {
 		score=s;
 	}
+	public void setLinesMade (int l) {
+		linesMade=l;
+	}
 	
 	public void keyPressed(KeyEvent e) {
 		if (e.getKeyCode()== KeyEvent.VK_LEFT)
@@ -327,10 +296,48 @@ public class Board extends JPanel implements KeyListener
 	}
 
 	public void setBoard() {
-		board= new int[boardHeight+3][boardWidth+2];
+		board= new int[boardHeight+3+Shape.getDisRow()][boardWidth+2];
 		for (int i=0; i<board.length; i++)
 			for (int j=0; j<board[0].length; j++)
 				if (i==board.length-1 || j==0 || j==board[i].length-1)
 					board[i][j]=8;
+	}
+	
+	public void setShapes() {
+		shapes[0]= new Shape (1, blocks.getSubimage(0, 0, blockSize, blockSize), new int[][] {
+			{0, 0, 0, 0},
+			{1, 1, 1, 1},
+			{0, 0, 0, 0},
+			{0, 0, 0, 0}	// I-shape
+		}, this);
+		shapes[1]= new Shape (2, blocks.getSubimage(blockSize, 0, blockSize, blockSize), new int[][] {
+			{1, 1, 0},
+			{0, 1, 1},
+			{0, 0, 0}	// Z-shape
+		}, this);
+		shapes[2]= new Shape (3, blocks.getSubimage(blockSize*2, 0, blockSize, blockSize), new int[][] {
+			{0, 1, 1},
+			{1, 1, 0},
+			{0, 0, 0}	// S-shape
+		}, this);
+		shapes[3]= new Shape (4, blocks.getSubimage(blockSize*3, 0, blockSize, blockSize), new int[][] {
+			{0, 1, 0},
+			{1, 1, 1},
+			{0, 0, 0}	// T-shape
+		}, this);
+		shapes[4]= new Shape (5, blocks.getSubimage(blockSize*4, 0, blockSize, blockSize), new int[][] {
+			{0, 0, 1},
+			{1, 1, 1},
+			{0, 0, 0}	// L-shape
+		}, this);
+		shapes[5]= new Shape (6, blocks.getSubimage(blockSize*5, 0, blockSize, blockSize), new int[][] {
+			{1, 0, 0},
+			{1, 1, 1},
+			{0, 0, 0}	// J-shape
+		}, this);
+		shapes[6]= new Shape (7, blocks.getSubimage(blockSize*6, 0, blockSize, blockSize), new int[][] {
+			{1, 1},
+			{1, 1}		// square-shape
+		}, this);
 	}
 }
