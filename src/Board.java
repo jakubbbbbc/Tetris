@@ -32,7 +32,7 @@ public class Board extends JPanel implements KeyListener
 	
 	private Shape shapes[]=new Shape[7];
 	private Shape currentShape;
-	private Shape newShape;
+	private Shape nextShape[]= new Shape[3];
 	
 	private Timer timer;
 	private final int FPS=60;
@@ -55,20 +55,21 @@ public class Board extends JPanel implements KeyListener
 		
 		timer = new Timer(delay, new ActionListener(){
 			public void actionPerformed(ActionEvent arg0) {
-				update();
-				repaint();	
+				if (!gameOver) {																															//!!!!!!!!!!!!!!!!!!!!
+					update();
+					repaint();	
+				}
 			}
 		});
-		
-		//timer.start();
 		
 		setShapes();
 		
 		int shapeNum = (int)(Math.random()*7); 
 		currentShape= new Shape (shapes[shapeNum].getColMul(), shapes[shapeNum].getBlock(), shapes[shapeNum].getCoords(), this);
-		shapeNum = (int)(Math.random()*7); 
-		newShape= new Shape (shapes[shapeNum].getColMul(), shapes[shapeNum].getBlock(), shapes[shapeNum].getCoords(), this);
-		
+		for (int i=0; i<nextShape.length; i++) {
+			shapeNum = (int)(Math.random()*7); 
+			nextShape[i]= new Shape (shapes[shapeNum].getColMul(), shapes[shapeNum].getBlock(), shapes[shapeNum].getCoords(), this);
+		}
 		
 		highScore=getHighScore();
 	}
@@ -98,7 +99,7 @@ public class Board extends JPanel implements KeyListener
 				height--;
 			else {
 				linesMade++;
-				Tetris.getLinesMadeLabel().setText("Lines made: "+ linesMade);
+				Tetris.getLinesClearedLabel().setText("Lines cleared: "+ linesMade);
 				c++;
 				Shape.setLevel(linesMade/10+1);
 				Tetris.getLevelLabel().setText("Level "+ Shape.getLevel());
@@ -115,7 +116,7 @@ public class Board extends JPanel implements KeyListener
 			Tetris.getHighScoreLabel().setText("High Score: "+ String.valueOf(highScore));
 			
 			// create file with the high score
-			File file = new File ("HighScore.dat");
+			File file = new File ("/Users/" + System.getProperty("user.name") + "/HighScore.dat");
 			if (!file.exists())
 				try {
 					file.createNewFile();
@@ -149,7 +150,7 @@ public class Board extends JPanel implements KeyListener
 	}
 	public int getHighScore() {
 		
-		File file = new File ("HighScore.dat");
+		File file = new File ("/Users/" + System.getProperty("user.name") + "/HighScore.dat");
 		
 		FileReader readFile=null;
 		BufferedReader in=null;
@@ -181,7 +182,7 @@ public class Board extends JPanel implements KeyListener
 			for (int i=0; i<currentShape.getCoords().length; i++)
 				for (int j=0; j<currentShape.getCoords()[i].length; j++)
 					if (currentShape.getCoords()[i][j]==1)
-						board[currentShape.getY()+i+currentShape.getDisRow()][currentShape.getX()+j]=currentShape.getColMul();
+						board[currentShape.getY()+i+Shape.getDisRow()][currentShape.getX()+j]=currentShape.getColMul();
 			
 			// print the board
 			System.out.println("\n");
@@ -192,11 +193,12 @@ public class Board extends JPanel implements KeyListener
 			}
 		}
 		
-		currentShape=newShape;
+		currentShape=nextShape[0];
+		nextShape[0]=nextShape[1];
+		nextShape[1]=nextShape[2];
 		int shapeNum = (int)(Math.random()*7); 
-		newShape= new Shape (shapes[shapeNum].getColMul(), shapes[shapeNum].getBlock(), shapes[shapeNum].getCoords(), this);
-		
-// Display new Shape!!!		
+		nextShape[2]= new Shape (shapes[shapeNum].getColMul(), shapes[shapeNum].getBlock(), shapes[shapeNum].getCoords(), this);
+		ViewBoard.setShapes(nextShape);
 		
 	}
 	
@@ -254,6 +256,12 @@ public class Board extends JPanel implements KeyListener
 	public int[][] getBoard() {
 		return board;
 	}
+	public Shape getCurrentShape() {
+		return currentShape;
+	}
+	public Shape[] getNextShape() {
+		return nextShape;
+	}
 	public void setGameOver(boolean go) {
 		gameOver=go;
 	}
@@ -281,9 +289,11 @@ public class Board extends JPanel implements KeyListener
 		if (e.getKeyCode()== KeyEvent.VK_DOWN)
 			currentShape.setSpeed(false);
 		if (e.getKeyCode()== KeyEvent.VK_X)
-			currentShape.rotate(true);
+			currentShape.rotateRight(true);
 		if (e.getKeyCode()== KeyEvent.VK_Z)
-			currentShape.rotate(false);
+			currentShape.rotateRight(false);
+		if (e.getKeyCode()== KeyEvent.VK_UP)
+			currentShape.rotateRight(true);
 	}
 	
 	public void keyTyped(KeyEvent e) {
@@ -293,6 +303,9 @@ public class Board extends JPanel implements KeyListener
 	
 	public void restartTimer() {
 		timer.restart();
+	}
+	public void stopTimer() {
+		timer.stop();
 	}
 
 	public void setBoard() {
