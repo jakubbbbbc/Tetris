@@ -8,11 +8,13 @@ public class Shape
 	Board board;
 	private int colMul;
 	private int x, y;
+	private static final int disRow=1;
 	private int deltaX;
 	
 	private long time, lastTime;
 	private static int normalSpeed=500, fastSpeed=50;
 	private boolean goFast;
+	private static int level=1;
 	
 	public Shape(int cm, BufferedImage b, int[][] c, Board bo)
 	{
@@ -22,7 +24,7 @@ public class Shape
 		board=bo;
 		
 		x=4;
-		y=-1;
+		y=-1-disRow;
 		
 		deltaX=0;
 		time=0;
@@ -46,7 +48,7 @@ public class Shape
 		int currentSpeed;
 		
 		if (!goFast)
-			currentSpeed= normalSpeed;
+			currentSpeed= normalSpeed-50*(level-1);
 		else
 			currentSpeed= fastSpeed;
 		
@@ -74,14 +76,14 @@ public class Shape
 		for (int i=0; i<coords.length; i++)
 			for (int j=0; j<coords[i].length; j++)
 				if (coords[i][j]==1) {
-					if (board.getBoard()[y+i+1][x+j]!=0)
+					if (board.getBoard()[y+i+1+disRow][x+j]!=0)
 						return true;
 					j=coords[i].length;	
 				}
 		for (int i=0; i<coords.length; i++)
 			for (int j=coords[i].length-1; j>=0; j--)
 				if (coords[i][j]==1) {
-					if (board.getBoard()[y+i+1][x+j]!=0)
+					if (board.getBoard()[y+i+1+disRow][x+j]!=0)
 						return true;
 					j=-1;	
 				}
@@ -92,7 +94,7 @@ public class Shape
 		for (int j=0; j<coords[0].length; j++)
 			for (int i=coords.length-1; i>=0; i--)
 				if (coords[i][j]==1) {
-					if (board.getBoard()[y+i+1][x+j]!=0)
+					if (board.getBoard()[y+i+1+disRow][x+j]!=0)
 						return true;
 					i=-1;	
 				}
@@ -114,7 +116,7 @@ public class Shape
 			for (int i=0; i<ar.length; i++)
 				for (int j=0; j<ar[0].length; j++)
 					if (ar[i][j]!=0)
-						if (board.getBoard()[y+i+1][x+j]!=0)
+						if (board.getBoard()[y+i+1+disRow][x+j]!=0)
 							turn=false;
 			if (turn)
 			coords=ar;
@@ -134,7 +136,14 @@ public class Shape
 	public void setSpeed(boolean b) {
 		goFast=b;
 	}
+	public static void setLevel(int l) {
+		level=l;
+	}
 	
+	
+	public static int getLevel() {
+		return level;
+	}
 	public int getX() {
 		return x;
 	}
@@ -149,5 +158,8 @@ public class Shape
 	}
 	public int getColMul() {
 		return colMul;
+	}
+	public static int getDisRow() {
+		return disRow;
 	}
 }
