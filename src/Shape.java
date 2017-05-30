@@ -57,10 +57,14 @@ public class Shape
 			if (collisionY()) {
 				goFast=false;
 //check if game over
-				if (y==0)
+				if (y<0) {
 					board.setGameOver(true);
-				board.nextShape();
-				board.checkLine();
+					board.stopTimer();
+				}
+				else {
+					board.nextShape();
+					board.checkLine();
+				}
 			}
 			time=0;
 		}
@@ -101,7 +105,7 @@ public class Shape
 		return false;
 	} 
 	
-	public void rotate (boolean right) {
+	public void rotateRight (boolean right) {
 		if (coords.length!=2&&coords[0].length!=2) {
 			int r=coords.length;
 			int c=coords[0].length;
