@@ -57,9 +57,13 @@ public class Shape
 			if (collisionY()) {
 				goFast=false;
 //check if game over
-				if (y<0) {
+			//	for (int i=0, i<coords.length; i++)
+				//	for (int j=0; j<coords[i].length; j++)
+				//		if (coords [i][j]==1)
+					//		if ()
+				if (y<=0) {
 					board.setGameOver(true);
-					board.stopTimer();
+				y--;
 				}
 				else {
 					board.nextShape();
@@ -98,8 +102,11 @@ public class Shape
 		for (int j=0; j<coords[0].length; j++)
 			for (int i=coords.length-1; i>=0; i--)
 				if (coords[i][j]==1) {
-					if (board.getBoard()[y+i+1+disRow][x+j]!=0)
+					if (board.getBoard()[y+i+1+disRow][x+j]!=0) {
+						if (y<0)
+							board.setGameOver(true);
 						return true;
+					}
 					i=-1;	
 				}
 		return false;
@@ -143,7 +150,9 @@ public class Shape
 	public static void setLevel(int l) {
 		level=l;
 	}
-	
+	public void setY(int y) {
+		this.y=y;
+	}
 	
 	public static int getLevel() {
 		return level;
