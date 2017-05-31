@@ -14,6 +14,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
@@ -254,6 +255,7 @@ public class Board extends JPanel implements KeyListener
 	
 	public void hold() {
 		if (wasLocked && !gameOver) {
+			Tetris.getHoldError().setText("Shape locked. Press \"H\" or \"Shift\" to use it.");
 			int shapeNum= currentShape.getColMul()-1;
 			Shape toHold= new Shape (shapes[shapeNum].getColMul(), shapes[shapeNum].getBlock(), shapes[shapeNum].getCoords(), this);
 			if (!isHeld) {
@@ -268,6 +270,8 @@ public class Board extends JPanel implements KeyListener
 			}
 		wasLocked=false;
 		}
+		else
+			Tetris.getHoldError().setText("<html>Once shape is held, must lock<br>before holding another shape!</html>");
 	}
 	
 	public int getBlockSize()
