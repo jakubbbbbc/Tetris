@@ -270,7 +270,7 @@ public class Board extends JPanel implements KeyListener
 			}
 		wasLocked=false;
 		}
-		else
+		else if (!gameOver)
 			Tetris.getHoldError().setText("<html>Once shape is held, must lock<br>before holding another shape!</html>");
 	}
 	
