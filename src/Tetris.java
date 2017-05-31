@@ -11,12 +11,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 
-
-
 public class Tetris extends JFrame implements ActionListener
 {	
 	private static final int borderWidth=2;
-	private static final int WIDTH= 700, HEIGHT= 622+2*borderWidth; //700, 622
+	private static final int WIDTH= 1000, HEIGHT= 622+2*borderWidth; //700, 622
 	
 	private static Board board;
 	private ViewBoard nextBoard, holdBoard;
@@ -36,21 +34,24 @@ public class Tetris extends JFrame implements ActionListener
 		
 		// initialize stuff
 		board= new Board();
-		nextBoard= new ViewBoard(board.getCurrentShape(), board.getNextShape(), false);
+		
+		nextBoard= new ViewBoard(board.getNextShapes(), false);
+		holdBoard= new ViewBoard(board.getNextShapes(), true);
+		
+		next= new JLabel("Next Shapes", JLabel.CENTER);
 		scoreLabel = new JLabel ("Score: 0");
 		highScoreLabel= new JLabel ("High Score: "+board.getHighScore());
-		gameOverLabel= new JLabel ("Press \"New Game\" to start a new game.");
-		pausedLabel= new JLabel (" ", JLabel.CENTER);
-		next= new JLabel("Next Shape", JLabel.CENTER);
 		levelLabel= new JLabel ("Level: 1");
 		linesClearedLabel= new JLabel("Lines made: 0");
+		
+		pausedLabel= new JLabel (" ", JLabel.CENTER);
+		gameOverLabel= new JLabel ("Press \"New Game\" to start a new game.");
+		
 		newGame= new JButton ("New Game");
 		
 		
 		// set the panel
 		JPanel right= new JPanel();
-		//right.setSize(200, 621);
-		//right.setLayout(new GridLayout(5,1));
 		right.setLayout(new GridBagLayout());
 		c = new GridBagConstraints();
 		
@@ -63,7 +64,7 @@ public class Tetris extends JFrame implements ActionListener
 		
 		c.gridy = 1;
 		c.weighty = 1;
-	//	c.insets = new Insets(0, 92, 0, 0);
+		c.insets = new Insets(0, 0, 0, 0);
 		right.add(nextBoard, c);
 		
 		c.gridy = 2;
@@ -98,10 +99,9 @@ public class Tetris extends JFrame implements ActionListener
 		right.add(highScoreLabel, c);
 		
 		// set the whole layout
-		setLayout(new GridLayout(1,2));
-		
+		setLayout(new GridLayout(1,3));
+		add(holdBoard);
 		add(board);
-		
 		add(right);
 		
 		newGame.addActionListener(this);
@@ -115,25 +115,16 @@ public class Tetris extends JFrame implements ActionListener
 		String action= e.getActionCommand();
 		
 		if (action.equals("New Game")) {
-			board.setBoard();
-			board.addKeyListener(board);
-			board.setScore(0);
-			scoreLabel.setText("Score: 0");
-			board.setLinesMade(0);
-			linesClearedLabel.setText("Lines cleared: 0");
-			Shape.setLevel(1);
-			levelLabel.setText("Level: 1");
-			pausedLabel.setText(" ");
-			gameOverLabel.setText(" ");
-			//board.setFocusable(true);
-			board.requestFocusInWindow();
-			board.setGameOver(false);
-			if (newGameCount!=0)
-				board.nextShape();
-			else 
+			if (newGameCount==0) {
+				restart();
 				newGameCount++;
-			board.restartTimer();
-			System.out.println("start the game");
+			}
+			else {
+				restart();
+				restart();
+				restart();
+				restart();
+			}
 		}
 		
 	}
@@ -158,6 +149,35 @@ public class Tetris extends JFrame implements ActionListener
 	}
 	public static JLabel getLinesClearedLabel() {
 		return linesClearedLabel;
+	}
+	
+	public void restart() {
+		board.setBoard();
+		board.addKeyListener(board);
+		
+		board.setScore(0);
+		scoreLabel.setText("Score: 0");
+		
+		board.setLinesMade(0);
+		linesClearedLabel.setText("Lines cleared: 0");
+		
+		Shape.setLevel(1);
+		levelLabel.setText("Level: 1");
+		
+		pausedLabel.setText(" ");
+		gameOverLabel.setText(" ");
+		ViewBoard.setShape(null);
+		
+		//board.setFocusable(true);
+		board.requestFocusInWindow();
+		
+		board.setGameOver(false);
+		if (newGameCount!=0) 
+			board.nextShape();
+		else 
+			newGameCount++;
+		board.restartTimer();
+		System.out.println("start the game");
 	}
 	
 	public static void main(String[]args)
