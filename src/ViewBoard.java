@@ -15,7 +15,7 @@ public class ViewBoard  extends JPanel{
 	
 	private final int blockSize= 30;
 	
-	private final int boardWidth= 5, boardHeight= 5, nextX=90, nextY=5, holdX=100, holdY=30;
+	private final int boardWidth= 5, boardHeight= 5, nextX=90, nextY=5, holdX=0, holdY=5;
 	
 	private boolean isHold;
 	
