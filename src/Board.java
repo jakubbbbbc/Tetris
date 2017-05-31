@@ -29,10 +29,11 @@ public class Board extends JPanel implements KeyListener
 	private int[][] board;
 	
 	public boolean gameOver=true;
+	public boolean isHeld=false, wasLocked=true;
 	
 	private Shape shapes[]=new Shape[7];
 	private Shape currentShape;
-	private Shape nextShape[]= new Shape[3];
+	private Shape nextShapes[]= new Shape[3];
 	
 	private Timer timer;
 	private final int FPS=60;
@@ -55,20 +56,20 @@ public class Board extends JPanel implements KeyListener
 		
 		timer = new Timer(delay, new ActionListener(){
 			public void actionPerformed(ActionEvent arg0) {
-				if (!gameOver) {																															//!!!!!!!!!!!!!!!!!!!!
-					update();
-					repaint();	
-				}
+				update();
+				repaint();	
 			}
 		});
+		
+		timer.start();
 		
 		setShapes();
 		
 		int shapeNum = (int)(Math.random()*7); 
 		currentShape= new Shape (shapes[shapeNum].getColMul(), shapes[shapeNum].getBlock(), shapes[shapeNum].getCoords(), this);
-		for (int i=0; i<nextShape.length; i++) {
+		for (int i=0; i<nextShapes.length; i++) {
 			shapeNum = (int)(Math.random()*7); 
-			nextShape[i]= new Shape (shapes[shapeNum].getColMul(), shapes[shapeNum].getBlock(), shapes[shapeNum].getCoords(), this);
+			nextShapes[i]= new Shape (shapes[shapeNum].getColMul(), shapes[shapeNum].getBlock(), shapes[shapeNum].getCoords(), this);
 		}
 		
 		highScore=getHighScore();
@@ -76,12 +77,12 @@ public class Board extends JPanel implements KeyListener
 	
 	public void update()
 	{
-		if(!gameOver)
-			currentShape.update();
-		else {
+		if(gameOver) {
 			Tetris.getGameOverLabel().setText("Game over. Press \"New Game\" to start a new game.");
 			timer.stop();
 		}
+		else 
+			currentShape.update();
 	}
 	
 	public void checkLine()  {
@@ -175,10 +176,10 @@ public class Board extends JPanel implements KeyListener
 		return 0;
 	}
 	
-	
 	public void nextShape() {
 		
 		if (currentShape.collisionY()) { // without checking if collisionY it would treat all objects as if they hit the bottom
+			wasLocked=true;
 			for (int i=0; i<currentShape.getCoords().length; i++)
 				for (int j=0; j<currentShape.getCoords()[i].length; j++)
 					if (currentShape.getCoords()[i][j]==1)
@@ -193,13 +194,24 @@ public class Board extends JPanel implements KeyListener
 			}
 		}
 		
-		currentShape=nextShape[0];
-		nextShape[0]=nextShape[1];
-		nextShape[1]=nextShape[2];
-		int shapeNum = (int)(Math.random()*7); 
-		nextShape[2]= new Shape (shapes[shapeNum].getColMul(), shapes[shapeNum].getBlock(), shapes[shapeNum].getCoords(), this);
-		ViewBoard.setShapes(nextShape);
-		
+			currentShape=nextShapes[0];
+			nextShapes[0]=nextShapes[1];
+			nextShapes[1]=nextShapes[2];
+			int shapeNum = (int)(Math.random()*7); 
+			nextShapes[2]= new Shape (shapes[shapeNum].getColMul(), shapes[shapeNum].getBlock(), shapes[shapeNum].getCoords(), this);
+		/*	if (!currentShape.collisionY()) {
+				currentShape.setY(currentShape.getY()+1);
+				if (!currentShape.collisionY()) {
+					currentShape.setY(currentShape.getY()+1);
+					if (!currentShape.collisionY()) {
+						ViewBoard.setShapes(nextShapes);
+						currentShape.setY(currentShape.getY()-1);
+					}
+					currentShape.setY(currentShape.getY()-1);
+				}
+			}
+		*/	
+	
 	}
 	
 	public void paintComponent(Graphics g)
@@ -233,10 +245,28 @@ public class Board extends JPanel implements KeyListener
 		if (timer.isRunning()) {
 			timer.stop();
 			Tetris.getPausedLabel().setText("Paused");
-		}
+		} 
 		else {
 			timer.start();
 			Tetris.getPausedLabel().setText(" ");
+		}
+	}
+	
+	public void hold() {
+		if (wasLocked && !gameOver) {
+			int shapeNum= currentShape.getColMul()-1;
+			Shape toHold= new Shape (shapes[shapeNum].getColMul(), shapes[shapeNum].getBlock(), shapes[shapeNum].getCoords(), this);
+			if (!isHeld) {
+				System.out.println("first time");
+				ViewBoard.setShape(toHold);
+				isHeld=true;
+				nextShape();
+			}
+			else {
+				currentShape=ViewBoard.getShape();
+				ViewBoard.setShape(toHold);
+			}
+		wasLocked=false;
 		}
 	}
 	
@@ -259,8 +289,8 @@ public class Board extends JPanel implements KeyListener
 	public Shape getCurrentShape() {
 		return currentShape;
 	}
-	public Shape[] getNextShape() {
-		return nextShape;
+	public Shape[] getNextShapes() {
+		return nextShapes;
 	}
 	public void setGameOver(boolean go) {
 		gameOver=go;
@@ -281,8 +311,10 @@ public class Board extends JPanel implements KeyListener
 			currentShape.setSpeed(true);
 		if (e.getKeyCode()== KeyEvent.VK_SPACE)
 			currentShape.hardDrop();
-		if (e.getKeyCode()== KeyEvent.VK_P)
+		if (e.getKeyCode()== KeyEvent.VK_P) {
 			pause();
+			System.out.println("p pressed");
+		}
 	}
 	
 	public void keyReleased(KeyEvent e) {
@@ -294,6 +326,10 @@ public class Board extends JPanel implements KeyListener
 			currentShape.rotateRight(false);
 		if (e.getKeyCode()== KeyEvent.VK_UP)
 			currentShape.rotateRight(true);
+		if (e.getKeyCode()== KeyEvent.VK_H || e.getKeyCode()== KeyEvent.VK_SHIFT) {
+			hold();
+			System.out.println("H pressed");
+		}
 	}
 	
 	public void keyTyped(KeyEvent e) {
@@ -304,11 +340,14 @@ public class Board extends JPanel implements KeyListener
 	public void restartTimer() {
 		timer.restart();
 	}
-	public void stopTimer() {
+/*	public void stopTimer() {
 		timer.stop();
 	}
-
+*/
+	
 	public void setBoard() {
+		isHeld=false;
+		wasLocked=true;
 		board= new int[boardHeight+3+Shape.getDisRow()][boardWidth+2];
 		for (int i=0; i<board.length; i++)
 			for (int j=0; j<board[0].length; j++)
