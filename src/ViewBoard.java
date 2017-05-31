@@ -1,5 +1,8 @@
+import java.awt.BasicStroke;
 import java.awt.Graphics;
 import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -12,24 +15,22 @@ public class ViewBoard  extends JPanel{
 	
 	private final int blockSize= 30;
 	
-	private final int boardWidth= 5, boardHeight= 5, shiftX=100;
+	private final int boardWidth= 5, boardHeight= 5, nextX=90, nextY=5, holdX=100, holdY=30;
 	
 	private boolean isHold;
 	
-	private static Shape viewShape;
+	private static Shape holdShape;
 	private static Shape[] shapes;
 	
 	private Timer timer;
 	private final int FPS=60;
 	private final int delay= 1000/FPS;
 	
-	public ViewBoard(Shape s, Shape[] sh, boolean ih)
+	public ViewBoard(Shape[] s, boolean ih)
 	{	
 		isHold=ih;
-		if (isHold)
-			viewShape= s;
-		else
-			shapes= sh;
+		shapes= s;
+		holdShape=null;
 		
 		timer = new Timer(delay, new ActionListener(){
 			public void actionPerformed(ActionEvent arg0) {
@@ -46,61 +47,68 @@ public class ViewBoard  extends JPanel{
 	
 		g.setColor(Color.black); // not needed; black automatically
 		
+		Graphics2D g2 =(Graphics2D)g;
+		
+		int thickness = 3;
+		//Stroke oldStroke = g2.getStroke();
+		g2.setStroke(new BasicStroke(thickness));
+		//g2.setStroke(oldStroke);
 		
 		if (isHold) {
 			// draw the grid
-	/*		for (int i=0; i<=boardWidth; i++)
+			for (int i=0; i<=boardWidth; i++)
 				if (i==0 || i==boardWidth)	// only borders
-					g.drawLine(blockSize*i+shiftX, 0+shiftX, blockSize*i+shiftX, blockSize*boardHeight+shiftX);
+					g.drawLine(blockSize*i+holdX, 0+holdY, blockSize*i+holdX, blockSize*boardHeight+holdY);
 			for (int i=0; i<=boardHeight; i++)
 				if (i==0 || i==boardHeight)		// only borders
-					g.drawLine(0+shiftX, blockSize*i+shiftX, blockSize*boardWidth+shiftX, blockSize*i+shiftX);
-		*/
-			
-			// draw the frame
-			g.fillRect(0, 0+shiftX, shiftX, blockSize*boardHeight);
-			g.fillRect(blockSize*boardWidth+shiftX, 0+shiftX, shiftX, blockSize*boardHeight);
-			g.fillRect(0, 0, blockSize*boardWidth+2*shiftX, shiftX);
-			g.fillRect(0, blockSize*boardHeight+shiftX, blockSize*boardWidth+2*shiftX, shiftX);
+					g.drawLine(0+holdX, blockSize*i+holdY, blockSize*boardWidth+holdX, blockSize*i+holdY);
 		
 			// draw the shape
-			for (int i=0; i<viewShape.getCoords().length; i++)
-				for (int j=0; j<viewShape.getCoords()[i].length; j++)
-					if (viewShape.getCoords()[i][j]==1)
-						if (viewShape.getCoords().length==2)
-							g.drawImage(viewShape.getBlock(), (j+1)*blockSize+shiftX+15, (i+1)*blockSize+shiftX+15, null);
-						else if (viewShape.getCoords().length==3)
-							g.drawImage(viewShape.getBlock(), (j+1)*blockSize+shiftX, (i+2)*blockSize+shiftX-15, null);
-						else if (viewShape.getCoords().length==4)
-							g.drawImage(viewShape.getBlock(), (j+1)*blockSize+shiftX-15, (i+1)*blockSize+shiftX, null);
-		}
-		else {
-			// draw the grid
-					for (int i=0; i<=boardWidth; i++)
-						if (i==0 || i==boardWidth)	// only borders
-							g.drawLine(blockSize*i+shiftX, 0, blockSize*i+shiftX, blockSize*shapes.length*3);
-					for (int i=0; i<=shapes.length*3; i++)
-						if (i==0 || i==shapes.length*3)		// only borders
-							g.drawLine(0+shiftX, blockSize*i, blockSize*boardWidth+shiftX, blockSize*i);
-				
-					
-					// draw the frame
-				/*	g.fillRect(0, 0+shiftX, shiftX, blockSize*boardHeight);
+			if (holdShape!=null)
+				for (int i=0; i<holdShape.getCoords().length; i++)
+					for (int j=0; j<holdShape.getCoords()[i].length; j++)
+						if (holdShape.getCoords()[i][j]==1)
+							if (holdShape.getCoords().length==2)
+								g.drawImage(holdShape.getBlock(), (j+1)*blockSize+holdX+15, (i+1)*blockSize+holdY+15, null);
+							else if (holdShape.getCoords().length==3)
+								g.drawImage(holdShape.getBlock(), (j+1)*blockSize+holdX, (i+2)*blockSize+holdY-15, null);
+							else if (holdShape.getCoords().length==4)
+								g.drawImage(holdShape.getBlock(), (j+1)*blockSize+holdX-15, (i+1)*blockSize+holdY, null);
+			
+			// draw the frame
+			/*		g.fillRect(0, 0+shiftX, shiftX, blockSize*boardHeight);
 					g.fillRect(blockSize*boardWidth+shiftX, 0+shiftX, shiftX, blockSize*boardHeight);
 					g.fillRect(0, 0, blockSize*boardWidth+2*shiftX, shiftX);
 					g.fillRect(0, blockSize*boardHeight+shiftX, blockSize*boardWidth+2*shiftX, shiftX);
 			*/	
-					// draw the shape
-					for (int n=0; n<shapes.length; n++)
-						for (int i=0; i<shapes[n].getCoords().length; i++)
-							for (int j=0; j<shapes[n].getCoords()[i].length; j++)
-								if (shapes[n].getCoords()[i][j]==1)
-									if (shapes[n].getCoords().length==2)
-										g.drawImage(shapes[n].getBlock(), (j+1)*blockSize+shiftX+15, (i+n*3)*blockSize+15, null);
-									else if (shapes[n].getCoords().length==3)
-										g.drawImage(shapes[n].getBlock(), (j+1)*blockSize+shiftX, (i+n*3)*blockSize+15, null);
-									else if (shapes[n].getCoords().length==4)
-										g.drawImage(shapes[n].getBlock(), (j+1)*blockSize+shiftX-15, (i+n*3)*blockSize, null);
+		}
+		else {
+			// draw the grid
+				for (int i=0; i<=boardWidth; i++)
+					if (i==0 || i==boardWidth)	// only borders
+						g.drawLine(blockSize*i+nextX, 0+nextY, blockSize*i+nextX, blockSize*shapes.length*3+nextY);
+				for (int i=0; i<=shapes.length*3; i++)
+					if (i==0 || i==shapes.length*3)		// only borders
+						g.drawLine(0+nextX, blockSize*i+nextY, blockSize*boardWidth+nextX, blockSize*i+nextY);
+		
+				// draw the shape
+				for (int n=0; n<shapes.length; n++)
+					for (int i=0; i<shapes[n].getCoords().length; i++)
+						for (int j=0; j<shapes[n].getCoords()[i].length; j++)
+							if (shapes[n].getCoords()[i][j]==1)
+								if (shapes[n].getCoords().length==2)
+									g.drawImage(shapes[n].getBlock(), (j+1)*blockSize+nextX+15, (i+n*3)*blockSize+15+nextY, null);
+								else if (shapes[n].getCoords().length==3)
+									g.drawImage(shapes[n].getBlock(), (j+1)*blockSize+nextX, (i+n*3)*blockSize+15+nextY, null);
+								else if (shapes[n].getCoords().length==4)
+									g.drawImage(shapes[n].getBlock(), (j+1)*blockSize+nextX-15, (i+n*3)*blockSize+nextY, null);
+				
+				// draw the frame
+				/*				g.fillRect(0, 0+shiftX, shiftX, blockSize*boardHeight);
+								g.fillRect(blockSize*boardWidth+shiftX, 0+shiftX, shiftX, blockSize*boardHeight);
+								g.fillRect(0, 0, blockSize*boardWidth+2*shiftX, shiftX);
+								g.fillRect(0, blockSize*boardHeight+shiftX, blockSize*boardWidth+2*shiftX, shiftX);
+				*/	
 							
 		}
 		
@@ -110,12 +118,12 @@ public class ViewBoard  extends JPanel{
 	}
 	
 
-	public Shape getShape() {
-		return viewShape;
+	public static Shape getShape() {
+		return holdShape;
 	}
 	
 	public static void setShape(Shape s) {
-		viewShape=s;
+		holdShape=s;
 	}
 	public static void setShapes(Shape[] s) {
 		shapes=s;
