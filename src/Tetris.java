@@ -18,11 +18,11 @@ public class Tetris extends JFrame implements ActionListener
 	
 	private static Board board;
 	private ViewBoard nextBoard, holdBoard;
-	private static JLabel scoreLabel, highScoreLabel, gameOverLabel, pausedLabel, next, levelLabel, linesClearedLabel;
+	private static JLabel scoreLabel, highScoreLabel, gameOverLabel, pausedLabel, next, levelLabel, linesClearedLabel, held, holdError;
 	private JButton newGame;
 	
 	public int newGameCount=0;
-	public GridBagConstraints c;
+	public GridBagConstraints c, c1;
 	
 	public Tetris()
 	{
@@ -47,10 +47,13 @@ public class Tetris extends JFrame implements ActionListener
 		pausedLabel= new JLabel (" ", JLabel.CENTER);
 		gameOverLabel= new JLabel ("Press \"New Game\" to start a new game.");
 		
+		held = new JLabel("Held Shape", JLabel.CENTER);
+		holdError= new JLabel(" ", JLabel.CENTER);
+		
 		newGame= new JButton ("New Game");
 		
 		
-		// set the panel
+	// right side
 		JPanel right= new JPanel();
 		right.setLayout(new GridBagLayout());
 		c = new GridBagConstraints();
@@ -64,13 +67,13 @@ public class Tetris extends JFrame implements ActionListener
 		
 		c.gridy = 1;
 		c.weighty = 1;
-		c.insets = new Insets(0, 0, 0, 0);
+		//c.insets = new Insets(0, 0, 0, 0);
 		right.add(nextBoard, c);
 		
 		c.gridy = 2;
 		c.weightx = .1;
 		c.weighty = .1;
-	//	c.insets = new Insets(0, 0, 0, 0);
+		//c.insets = new Insets(0, 0, 0, 0);
 		c.fill = GridBagConstraints.NONE;
 		right.add(pausedLabel, c);
 		
@@ -98,9 +101,28 @@ public class Tetris extends JFrame implements ActionListener
 		c.gridy = 6;
 		right.add(highScoreLabel, c);
 		
-		// set the whole layout
+	// left side
+		JPanel left= new JPanel();
+		//left.setLayout(new GridLayout(3,1));
+		left.setLayout(new GridBagLayout());
+		c1 = new GridBagConstraints();
+		
+		c1.gridx = 0;
+		c1.gridy = 0;
+		c1.gridwidth = 2;
+		c1.weighty = .1;
+		//c1.fill = GridBagConstraints.BOTH;
+		right.add(held, c1);
+		
+		//c1.gridy = 1;
+		//c1.weighty = 1;
+		//c1.gridwidth=2;
+		//left.add(holdBoard, c1);
+		//left.add(holdError, c1);
+	
+	// set the whole layout
 		setLayout(new GridLayout(1,3));
-		add(holdBoard);
+		add(left);
 		add(board);
 		add(right);
 		
