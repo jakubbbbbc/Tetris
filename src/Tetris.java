@@ -18,7 +18,7 @@ public class Tetris extends JFrame implements ActionListener
 	
 	private static Board board;
 	private ViewBoard nextBoard, holdBoard;
-	private static JLabel scoreLabel, highScoreLabel, gameOverLabel, pausedLabel, next, levelLabel, linesClearedLabel, held, holdError;
+	private static JLabel scoreLabel, highScoreLabel, gameOverLabel, pausedLabel, next, levelLabel, linesClearedLabel, held, holdError, credits;
 	private JButton newGame;
 	
 	public int newGameCount=0;
@@ -49,6 +49,7 @@ public class Tetris extends JFrame implements ActionListener
 		
 		held = new JLabel("Held Shape", JLabel.CENTER);
 		holdError= new JLabel(" ", JLabel.CENTER);
+		credits= new JLabel("<html>Game created by Jakub Ciemiega and Vanessa Wang<br><br>Senior May Term 2017</html>", JLabel.CENTER);
 		
 		newGame= new JButton ("New Game");
 		
@@ -101,24 +102,35 @@ public class Tetris extends JFrame implements ActionListener
 		c.gridy = 6;
 		right.add(highScoreLabel, c);
 		
-	// left side
-		JPanel left= new JPanel();
+		// left side
+		JPanel left = new JPanel();
 		//left.setLayout(new GridLayout(3,1));
 		left.setLayout(new GridBagLayout());
 		c1 = new GridBagConstraints();
-		
+				
 		c1.gridx = 0;
 		c1.gridy = 0;
-		c1.gridwidth = 2;
 		c1.weighty = .1;
 		//c1.fill = GridBagConstraints.BOTH;
-		right.add(held, c1);
-		
-		//c1.gridy = 1;
-		//c1.weighty = 1;
-		//c1.gridwidth=2;
-		//left.add(holdBoard, c1);
-		//left.add(holdError, c1);
+		left.add(held, c1);
+				
+		c1.gridy = 1;
+		c1.weightx = 1;
+		c1.weighty = .4;
+		c1.fill = GridBagConstraints.BOTH;
+		c1.insets = new Insets(0, 88, 0, 0);
+		left.add(holdBoard, c1);
+				
+		c1.gridy = 2;
+		c1.weightx = 0;
+		c1.weighty = .2;
+		c1.fill = GridBagConstraints.NONE;
+		c1.insets = new Insets(0, 0, 165, 0);
+		left.add(holdError, c1);
+				
+		c1.gridy = 3;
+		c1.insets = new Insets(0, 0, 0, 0);
+		left.add(credits, c1);
 	
 	// set the whole layout
 		setLayout(new GridLayout(1,3));
@@ -172,6 +184,9 @@ public class Tetris extends JFrame implements ActionListener
 	public static JLabel getLinesClearedLabel() {
 		return linesClearedLabel;
 	}
+	public static JLabel getHoldError() {
+		return holdError;
+	}
 	
 	public void restart() {
 		board.setBoard();
@@ -189,6 +204,8 @@ public class Tetris extends JFrame implements ActionListener
 		pausedLabel.setText(" ");
 		gameOverLabel.setText(" ");
 		ViewBoard.setShape(null);
+		
+		holdError.setText("Press \"H\" or\"Shift\" to hold");
 		
 		//board.setFocusable(true);
 		board.requestFocusInWindow();
